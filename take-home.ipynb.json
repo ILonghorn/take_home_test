@@ -1,0 +1,944 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "collapsed": true
+   },
+   "source": [
+    "# Agrarian Labs take-home test"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Importing the required Packages"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 198,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "import pandas as pd\n",
+    "from __future__ import division\n",
+    "from haversine import haversine\n",
+    "import gmplot\n",
+    "import matplotlib.pyplot as plt\n",
+    "%matplotlib inline"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Import the Dataset "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 199,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "data = pd.read_csv('take-home-test.csv',index_col='id')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 200,
+   "metadata": {
+    "collapsed": false,
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>latitude</th>\n",
+       "      <th>longitude</th>\n",
+       "      <th>heading</th>\n",
+       "      <th>device_id</th>\n",
+       "      <th>time_in_seconds</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>id</th>\n",
+       "      <th></th>\n",
+       "      <th></th>\n",
+       "      <th></th>\n",
+       "      <th></th>\n",
+       "      <th></th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>12610468</th>\n",
+       "      <td>32.998882</td>\n",
+       "      <td>-112.024586</td>\n",
+       "      <td>162.857681</td>\n",
+       "      <td>84285656-3700-4692-b5b8-42fe94bf89db</td>\n",
+       "      <td>1471910400</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>12610471</th>\n",
+       "      <td>33.029711</td>\n",
+       "      <td>-112.078511</td>\n",
+       "      <td>52.608635</td>\n",
+       "      <td>29b800c4-0ed8-45ee-bf0e-00cf838436f9</td>\n",
+       "      <td>1471910400</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>12610475</th>\n",
+       "      <td>33.029711</td>\n",
+       "      <td>-112.078511</td>\n",
+       "      <td>101.625412</td>\n",
+       "      <td>29b800c4-0ed8-45ee-bf0e-00cf838436f9</td>\n",
+       "      <td>1471910401</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>12610480</th>\n",
+       "      <td>33.029711</td>\n",
+       "      <td>-112.078511</td>\n",
+       "      <td>150.355499</td>\n",
+       "      <td>29b800c4-0ed8-45ee-bf0e-00cf838436f9</td>\n",
+       "      <td>1471910402</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>12610486</th>\n",
+       "      <td>33.029716</td>\n",
+       "      <td>-112.078507</td>\n",
+       "      <td>150.157745</td>\n",
+       "      <td>29b800c4-0ed8-45ee-bf0e-00cf838436f9</td>\n",
+       "      <td>1471910403</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "           latitude   longitude     heading  \\\n",
+       "id                                            \n",
+       "12610468  32.998882 -112.024586  162.857681   \n",
+       "12610471  33.029711 -112.078511   52.608635   \n",
+       "12610475  33.029711 -112.078511  101.625412   \n",
+       "12610480  33.029711 -112.078511  150.355499   \n",
+       "12610486  33.029716 -112.078507  150.157745   \n",
+       "\n",
+       "                                     device_id  time_in_seconds  \n",
+       "id                                                               \n",
+       "12610468  84285656-3700-4692-b5b8-42fe94bf89db       1471910400  \n",
+       "12610471  29b800c4-0ed8-45ee-bf0e-00cf838436f9       1471910400  \n",
+       "12610475  29b800c4-0ed8-45ee-bf0e-00cf838436f9       1471910401  \n",
+       "12610480  29b800c4-0ed8-45ee-bf0e-00cf838436f9       1471910402  \n",
+       "12610486  29b800c4-0ed8-45ee-bf0e-00cf838436f9       1471910403  "
+      ]
+     },
+     "execution_count": 200,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# Displaying the top 5 rows to get a look at the data\n",
+    "data.head()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Doing preliminary analysis on the dataset"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 201,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(119301, 5)"
+      ]
+     },
+     "execution_count": 201,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# check the size of the dataset\n",
+    "data.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 202,
+   "metadata": {
+    "collapsed": false,
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "<class 'pandas.core.frame.DataFrame'>\n",
+      "Int64Index: 119301 entries, 12610468 to 13002840\n",
+      "Data columns (total 5 columns):\n",
+      "latitude           119301 non-null float64\n",
+      "longitude          119301 non-null float64\n",
+      "heading            119301 non-null float64\n",
+      "device_id          119301 non-null object\n",
+      "time_in_seconds    119301 non-null int64\n",
+      "dtypes: float64(3), int64(1), object(1)\n",
+      "memory usage: 5.5+ MB\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Checking for the missing values \n",
+    "data.info(null_counts=True,verbose=True)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "###### This shows that there are no missing values in the dataset. We can proceed with the analysis without worrying about the missing values"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 203,
+   "metadata": {
+    "collapsed": false,
+    "scrolled": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "29b800c4-0ed8-45ee-bf0e-00cf838436f9    21740\n",
+       "70f3fb10-11e1-422a-9a02-e243e1225611    18319\n",
+       "ae17e275-3556-422a-9727-997914cfbe06    15451\n",
+       "1ef31301-9582-4d04-85e2-109e91bc0396    14989\n",
+       "efa43313-4a64-4b46-b006-f7882c050d2e    13695\n",
+       "84285656-3700-4692-b5b8-42fe94bf89db    12882\n",
+       "02fbc9c1-2883-458d-997f-548fa37af2c6    12236\n",
+       "0287939c-f943-4fe5-8a9b-bc55b39fd36a     8236\n",
+       "73576478-ecf4-4a6c-a726-01d825d58da4     1701\n",
+       "b407ba6a-9827-470c-8c43-e984b9ee3d5f       52\n",
+       "Name: device_id, dtype: int64"
+      ]
+     },
+     "execution_count": 203,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# Counting data points(rows) for each device\n",
+    "data.device_id.value_counts()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 204,
+   "metadata": {
+    "collapsed": false,
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Device_id:  ae17e275-3556-422a-9727-997914cfbe06\n",
+      "1471963958    7\n",
+      "1471964393    7\n",
+      "1471964461    7\n",
+      "Name: time_in_seconds, dtype: int64\n",
+      "\n",
+      "Device_id:  02fbc9c1-2883-458d-997f-548fa37af2c6\n",
+      "1471969537    13\n",
+      "1471969580    11\n",
+      "1471969521    11\n",
+      "Name: time_in_seconds, dtype: int64\n",
+      "\n",
+      "Device_id:  0287939c-f943-4fe5-8a9b-bc55b39fd36a\n",
+      "1471978183    11\n",
+      "1471963790    10\n",
+      "1471978145     9\n",
+      "Name: time_in_seconds, dtype: int64\n",
+      "\n",
+      "Device_id:  70f3fb10-11e1-422a-9a02-e243e1225611\n",
+      "1471994614    20\n",
+      "1471982865     9\n",
+      "1471982496     9\n",
+      "Name: time_in_seconds, dtype: int64\n",
+      "\n",
+      "Device_id:  1ef31301-9582-4d04-85e2-109e91bc0396\n",
+      "1471994464    13\n",
+      "1471994474    10\n",
+      "1471994392     7\n",
+      "Name: time_in_seconds, dtype: int64\n",
+      "\n",
+      "Device_id:  73576478-ecf4-4a6c-a726-01d825d58da4\n",
+      "1471963745    7\n",
+      "1471965874    6\n",
+      "1471963660    6\n",
+      "Name: time_in_seconds, dtype: int64\n",
+      "\n",
+      "Device_id:  84285656-3700-4692-b5b8-42fe94bf89db\n",
+      "1471995616    9\n",
+      "1471995399    8\n",
+      "1471995538    7\n",
+      "Name: time_in_seconds, dtype: int64\n",
+      "\n",
+      "Device_id:  29b800c4-0ed8-45ee-bf0e-00cf838436f9\n",
+      "1471922118    9\n",
+      "1471995746    8\n",
+      "1471995765    7\n",
+      "Name: time_in_seconds, dtype: int64\n",
+      "\n",
+      "Device_id:  b407ba6a-9827-470c-8c43-e984b9ee3d5f\n",
+      "1471962523    3\n",
+      "1471962751    1\n",
+      "1471962661    1\n",
+      "Name: time_in_seconds, dtype: int64\n",
+      "\n",
+      "Device_id:  efa43313-4a64-4b46-b006-f7882c050d2e\n",
+      "1471964224    14\n",
+      "1471965224    12\n",
+      "1471965226    11\n",
+      "Name: time_in_seconds, dtype: int64\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Looking at each device statistics individually\n",
+    "grouped = data.groupby('device_id')\n",
+    "# Looking for time stamps for each device_id\n",
+    "for id in grouped.groups:\n",
+    "    print 'Device_id: ', id\n",
+    "    print grouped.get_group(id).time_in_seconds.value_counts()[:3]\n",
+    "    print "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "###### This shows that for each device there are multiple entries with the same time stamp i.e device is sending the location data multiple times at the same time, we have to correct this as there can be only 1 entry at the same time."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 205,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/Users/ishanchandel/anaconda2/lib/python2.7/site-packages/ipykernel/__main__.py:3: FutureWarning: sort(columns=....) is deprecated, use sort_values(by=.....)\n",
+      "  app.launch_new_instance()\n"
+     ]
+    }
+   ],
+   "source": [
+    "# I will replace the rows with duplicate time stamps by the average values of the entries\n",
+    "newdata = data.groupby(['device_id','time_in_seconds'],as_index=False).mean()\n",
+    "newdata.sort(['device_id','time_in_seconds'],inplace=True)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 206,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Size of New dataset:  (110903, 5)\n",
+      "No. of rows removed from the original dataset:  8398\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Size of the new dataset\n",
+    "print \"Size of New dataset: \",newdata.shape\n",
+    "print \"No. of rows removed from the original dataset: \", len(data) - len(newdata)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 207,
+   "metadata": {
+    "collapsed": false,
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>device_id</th>\n",
+       "      <th>time_in_seconds</th>\n",
+       "      <th>latitude</th>\n",
+       "      <th>longitude</th>\n",
+       "      <th>heading</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>0287939c-f943-4fe5-8a9b-bc55b39fd36a</td>\n",
+       "      <td>1471963690</td>\n",
+       "      <td>33.012649</td>\n",
+       "      <td>-112.106534</td>\n",
+       "      <td>343.006348</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>0287939c-f943-4fe5-8a9b-bc55b39fd36a</td>\n",
+       "      <td>1471963691</td>\n",
+       "      <td>33.012651</td>\n",
+       "      <td>-112.106626</td>\n",
+       "      <td>345.585480</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>0287939c-f943-4fe5-8a9b-bc55b39fd36a</td>\n",
+       "      <td>1471963692</td>\n",
+       "      <td>33.012651</td>\n",
+       "      <td>-112.106716</td>\n",
+       "      <td>344.029236</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>0287939c-f943-4fe5-8a9b-bc55b39fd36a</td>\n",
+       "      <td>1471963693</td>\n",
+       "      <td>33.012645</td>\n",
+       "      <td>-112.106814</td>\n",
+       "      <td>179.521060</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>0287939c-f943-4fe5-8a9b-bc55b39fd36a</td>\n",
+       "      <td>1471963697</td>\n",
+       "      <td>33.012645</td>\n",
+       "      <td>-112.106814</td>\n",
+       "      <td>352.071777</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "                              device_id  time_in_seconds   latitude  \\\n",
+       "0  0287939c-f943-4fe5-8a9b-bc55b39fd36a       1471963690  33.012649   \n",
+       "1  0287939c-f943-4fe5-8a9b-bc55b39fd36a       1471963691  33.012651   \n",
+       "2  0287939c-f943-4fe5-8a9b-bc55b39fd36a       1471963692  33.012651   \n",
+       "3  0287939c-f943-4fe5-8a9b-bc55b39fd36a       1471963693  33.012645   \n",
+       "4  0287939c-f943-4fe5-8a9b-bc55b39fd36a       1471963697  33.012645   \n",
+       "\n",
+       "    longitude     heading  \n",
+       "0 -112.106534  343.006348  \n",
+       "1 -112.106626  345.585480  \n",
+       "2 -112.106716  344.029236  \n",
+       "3 -112.106814  179.521060  \n",
+       "4 -112.106814  352.071777  "
+      ]
+     },
+     "execution_count": 207,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "newdata.head()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### We need to carry out some exploratory analysis to understand the data and get an overall perspective"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 208,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "# Creating maps for each device to show the path taken by the device\n",
+    "for device in newdata.device_id.unique():\n",
+    "    ndata = newdata[newdata.device_id == device]\n",
+    "    gmap = gmplot.GoogleMapPlotter(ndata.latitude.mean(), ndata.longitude.mean(),18)\n",
+    "    gmap.scatter(ndata.latitude, ndata.longitude, '#3B0B39', size=1, marker=False)\n",
+    "    #gmap.scatter(marker_lats, marker_lngs, 'k', marker=True)\n",
+    "    gmap.draw(device+\".html\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### I will show here the device paths for only 3 devices, the images show that how some of the devices travel over larger distances than other devices and show the patterns in which they do farming"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 209,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<h5>Device_id : 1ef31301-9582-4d04-85e2-109e91bc0396</h5>\n",
+       "<img src = \"1ef31301-9582-4d04-85e2-109e91bc0396.png\">\n",
+       "<h5>Device_id : 0287939c-f943-4fe5-8a9b-bc55b39fd36a</h5>\n",
+       "<img src = \"0287939c-f943-4fe5-8a9b-bc55b39fd36a.png\">\n",
+       "<h5>Device_id : 84285656-3700-4692-b5b8-42fe94bf89db</h5>\n",
+       "<img src = \"84285656-3700-4692-b5b8-42fe94bf89db.png\">"
+      ],
+      "text/plain": [
+       "<IPython.core.display.HTML object>"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "%%HTML\n",
+    "<h5>Device_id : 1ef31301-9582-4d04-85e2-109e91bc0396</h5>\n",
+    "<img src = \"1ef31301-9582-4d04-85e2-109e91bc0396.png\">\n",
+    "<h5>Device_id : 0287939c-f943-4fe5-8a9b-bc55b39fd36a</h5>\n",
+    "<img src = \"0287939c-f943-4fe5-8a9b-bc55b39fd36a.png\">\n",
+    "<h5>Device_id : 84285656-3700-4692-b5b8-42fe94bf89db</h5>\n",
+    "<img src = \"84285656-3700-4692-b5b8-42fe94bf89db.png\">"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Now I will answer the 2 problem statements \n",
+    "1. The number of turns each device takes. \n",
+    "2. Total stopping time for each device"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 223,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "# define the place holders for the new columns\n",
+    "newdata['ch_in_heading'] = 0\n",
+    "newdata['turn_taken'] = 0\n",
+    "newdata['speed'] = 0\n",
+    "newdata['time_at_rest'] = 0\n",
+    "newdata['distance'] = 0\n",
+    "# do the calculations\n",
+    "for i in newdata.index:\n",
+    "    reset_id = newdata.loc[i,'device_id']\n",
+    "    end = (newdata.loc[i,'latitude'],newdata.loc[i,'longitude'])\n",
+    "    if i == newdata.index[0] or reset_id != newdata.loc[i-1,'device_id']:\n",
+    "        end_heading = newdata.loc[i,'heading']\n",
+    "        start = end\n",
+    "        dist = 1000*haversine(end,start)\n",
+    "        speed = dist/newdata.loc[i,'time_in_seconds']\n",
+    "        start_time = newdata.loc[i,'time_in_seconds']\n",
+    "    else:\n",
+    "        dist =  1000*haversine(end,start)\n",
+    "        speed = dist/(newdata.loc[i,'time_in_seconds']-start_time)\n",
+    "    diff = newdata.loc[i,'heading'] - end_heading\n",
+    "    start = (newdata.loc[i,'latitude'],newdata.loc[i,'longitude'])\n",
+    "    if speed == 0:\n",
+    "        newdata.loc[i,'time_at_rest'] = newdata.loc[i,'time_in_seconds']-start_time\n",
+    "    if diff < 0:\n",
+    "        diff = -diff\n",
+    "    if diff > 180:\n",
+    "        diff = 360 - diff\n",
+    "    newdata.loc[i,'ch_in_heading'] = diff\n",
+    "    if diff >= 45 and newdata.loc[i+1,'heading'] == newdata.loc[i,'heading']:\n",
+    "        end_heading = newdata.loc[i,'heading']\n",
+    "        newdata.loc[i,'turn_taken'] = 1\n",
+    "    start_time = newdata.loc[i,'time_in_seconds']\n",
+    "    newdata.loc[i,'speed'] = speed\n",
+    "    newdata.loc[i,'distance'] = dist"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### I have made following assumtions to get to the results.\n",
+    "1. I have used heading to calculate the number of turns. If the change in heading is more than 45 \n",
+    "degress then it is assumed to have taken a turn.\n",
+    "2. I have used the haversine formula to calculate the distance between two points using latitude and longitude and then \n",
+    "dividing by time taken I have calculated the speed of the device at that time. If the Speed of the device is 0 in the\n",
+    "time interval only then it is assumed to be stationary."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 224,
+   "metadata": {
+    "collapsed": false,
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>device_id</th>\n",
+       "      <th>time_in_seconds</th>\n",
+       "      <th>latitude</th>\n",
+       "      <th>longitude</th>\n",
+       "      <th>heading</th>\n",
+       "      <th>ch_in_heading</th>\n",
+       "      <th>turn_taken</th>\n",
+       "      <th>speed</th>\n",
+       "      <th>time_at_rest</th>\n",
+       "      <th>distance</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>0287939c-f943-4fe5-8a9b-bc55b39fd36a</td>\n",
+       "      <td>1471963690</td>\n",
+       "      <td>33.012649</td>\n",
+       "      <td>-112.106534</td>\n",
+       "      <td>343.006348</td>\n",
+       "      <td>0.000000</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0.000000</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>0287939c-f943-4fe5-8a9b-bc55b39fd36a</td>\n",
+       "      <td>1471963691</td>\n",
+       "      <td>33.012651</td>\n",
+       "      <td>-112.106626</td>\n",
+       "      <td>345.585480</td>\n",
+       "      <td>2.579132</td>\n",
+       "      <td>0</td>\n",
+       "      <td>8.582158</td>\n",
+       "      <td>0</td>\n",
+       "      <td>8.582158</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>0287939c-f943-4fe5-8a9b-bc55b39fd36a</td>\n",
+       "      <td>1471963692</td>\n",
+       "      <td>33.012651</td>\n",
+       "      <td>-112.106716</td>\n",
+       "      <td>344.029236</td>\n",
+       "      <td>1.022888</td>\n",
+       "      <td>0</td>\n",
+       "      <td>8.419957</td>\n",
+       "      <td>0</td>\n",
+       "      <td>8.419957</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>0287939c-f943-4fe5-8a9b-bc55b39fd36a</td>\n",
+       "      <td>1471963693</td>\n",
+       "      <td>33.012645</td>\n",
+       "      <td>-112.106814</td>\n",
+       "      <td>179.521060</td>\n",
+       "      <td>163.485288</td>\n",
+       "      <td>0</td>\n",
+       "      <td>9.106296</td>\n",
+       "      <td>0</td>\n",
+       "      <td>9.106296</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>0287939c-f943-4fe5-8a9b-bc55b39fd36a</td>\n",
+       "      <td>1471963697</td>\n",
+       "      <td>33.012645</td>\n",
+       "      <td>-112.106814</td>\n",
+       "      <td>352.071777</td>\n",
+       "      <td>9.065430</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0.000000</td>\n",
+       "      <td>4</td>\n",
+       "      <td>0.000000</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "                              device_id  time_in_seconds   latitude  \\\n",
+       "0  0287939c-f943-4fe5-8a9b-bc55b39fd36a       1471963690  33.012649   \n",
+       "1  0287939c-f943-4fe5-8a9b-bc55b39fd36a       1471963691  33.012651   \n",
+       "2  0287939c-f943-4fe5-8a9b-bc55b39fd36a       1471963692  33.012651   \n",
+       "3  0287939c-f943-4fe5-8a9b-bc55b39fd36a       1471963693  33.012645   \n",
+       "4  0287939c-f943-4fe5-8a9b-bc55b39fd36a       1471963697  33.012645   \n",
+       "\n",
+       "    longitude     heading  ch_in_heading  turn_taken     speed  time_at_rest  \\\n",
+       "0 -112.106534  343.006348       0.000000           0  0.000000             0   \n",
+       "1 -112.106626  345.585480       2.579132           0  8.582158             0   \n",
+       "2 -112.106716  344.029236       1.022888           0  8.419957             0   \n",
+       "3 -112.106814  179.521060     163.485288           0  9.106296             0   \n",
+       "4 -112.106814  352.071777       9.065430           0  0.000000             4   \n",
+       "\n",
+       "   distance  \n",
+       "0  0.000000  \n",
+       "1  8.582158  \n",
+       "2  8.419957  \n",
+       "3  9.106296  \n",
+       "4  0.000000  "
+      ]
+     },
+     "execution_count": 224,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# new dataset after the calculations\n",
+    "newdata.head()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Printing the 'time at rest' and 'no. of turns taken' for each device id"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 225,
+   "metadata": {
+    "collapsed": false,
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "                                      time_at_rest  turn_taken\n",
+      "device_id                                                     \n",
+      "0287939c-f943-4fe5-8a9b-bc55b39fd36a          1866         121\n",
+      "02fbc9c1-2883-458d-997f-548fa37af2c6          5474          71\n",
+      "1ef31301-9582-4d04-85e2-109e91bc0396          1994         211\n",
+      "29b800c4-0ed8-45ee-bf0e-00cf838436f9         27099         340\n",
+      "70f3fb10-11e1-422a-9a02-e243e1225611          7835         282\n",
+      "73576478-ecf4-4a6c-a726-01d825d58da4          1929          23\n",
+      "84285656-3700-4692-b5b8-42fe94bf89db         20531         131\n",
+      "ae17e275-3556-422a-9727-997914cfbe06          6040         183\n",
+      "b407ba6a-9827-470c-8c43-e984b9ee3d5f           236           0\n",
+      "efa43313-4a64-4b46-b006-f7882c050d2e          5223         205\n",
+      "\n",
+      "Note: time_at_rest is in seconds\n"
+     ]
+    }
+   ],
+   "source": [
+    "#calculating the no. of turns and stopping time\n",
+    "grouped2 = newdata.groupby('device_id')\n",
+    "print grouped2['time_at_rest','turn_taken'].sum()\n",
+    "print \n",
+    "print 'Note: time_at_rest is in seconds'"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Additional Insights from the data"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "###### 1. Percentage of time each device is not moving"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 233,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "device_id\n",
+       "0287939c-f943-4fe5-8a9b-bc55b39fd36a    12.544538\n",
+       "02fbc9c1-2883-458d-997f-548fa37af2c6    21.091161\n",
+       "1ef31301-9582-4d04-85e2-109e91bc0396     6.533421\n",
+       "29b800c4-0ed8-45ee-bf0e-00cf838436f9    31.365672\n",
+       "70f3fb10-11e1-422a-9a02-e243e1225611    23.810247\n",
+       "73576478-ecf4-4a6c-a726-01d825d58da4    53.583333\n",
+       "84285656-3700-4692-b5b8-42fe94bf89db    23.763557\n",
+       "ae17e275-3556-422a-9727-997914cfbe06    18.980579\n",
+       "b407ba6a-9827-470c-8c43-e984b9ee3d5f    98.744770\n",
+       "efa43313-4a64-4b46-b006-f7882c050d2e    17.193930\n",
+       "dtype: float64"
+      ]
+     },
+     "execution_count": 233,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "grouped2.time_at_rest.sum()/(grouped2.time_in_seconds.max()-grouped2.time_in_seconds.min())*100"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "###### 2. Distance travelled by each device in miles"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 231,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "device_id\n",
+      "0287939c-f943-4fe5-8a9b-bc55b39fd36a    14.385722\n",
+      "02fbc9c1-2883-458d-997f-548fa37af2c6    25.841148\n",
+      "1ef31301-9582-4d04-85e2-109e91bc0396    33.452896\n",
+      "29b800c4-0ed8-45ee-bf0e-00cf838436f9    34.839967\n",
+      "70f3fb10-11e1-422a-9a02-e243e1225611    40.793252\n",
+      "73576478-ecf4-4a6c-a726-01d825d58da4     4.807731\n",
+      "84285656-3700-4692-b5b8-42fe94bf89db    22.243993\n",
+      "ae17e275-3556-422a-9727-997914cfbe06    31.612403\n",
+      "b407ba6a-9827-470c-8c43-e984b9ee3d5f     0.003147\n",
+      "efa43313-4a64-4b46-b006-f7882c050d2e    25.937834\n",
+      "Name: distance, dtype: float64\n",
+      "\n",
+      "Note: All distances are in miles\n"
+     ]
+    }
+   ],
+   "source": [
+    "print grouped2.distance.sum()/1600\n",
+    "print\n",
+    "print \"Note: All distances are in miles\""
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "###### 3. Average speed of each device"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 237,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "device_id\n",
+      "0287939c-f943-4fe5-8a9b-bc55b39fd36a    3.481587\n",
+      "02fbc9c1-2883-458d-997f-548fa37af2c6    3.584347\n",
+      "1ef31301-9582-4d04-85e2-109e91bc0396    3.945951\n",
+      "29b800c4-0ed8-45ee-bf0e-00cf838436f9    1.451716\n",
+      "70f3fb10-11e1-422a-9a02-e243e1225611    4.462885\n",
+      "73576478-ecf4-4a6c-a726-01d825d58da4    4.807731\n",
+      "84285656-3700-4692-b5b8-42fe94bf89db    0.926865\n",
+      "ae17e275-3556-422a-9727-997914cfbe06    3.576288\n",
+      "b407ba6a-9827-470c-8c43-e984b9ee3d5f    0.047404\n",
+      "efa43313-4a64-4b46-b006-f7882c050d2e    3.073911\n",
+      "dtype: float64\n",
+      "\n",
+      " All Speeds are in miles/hour\n"
+     ]
+    }
+   ],
+   "source": [
+    "print grouped2.distance.sum()/(grouped2.time_in_seconds.max()-grouped2.time_in_seconds.min())*2.25\n",
+    "print \"\\n All Speeds are in miles/hour\""
+   ]
+  }
+ ],
+ "metadata": {
+  "anaconda-cloud": {},
+  "kernelspec": {
+   "display_name": "Python [Root]",
+   "language": "python",
+   "name": "Python [Root]"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 2
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython2",
+   "version": "2.7.12"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 0
+}
